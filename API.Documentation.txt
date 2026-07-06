@@ -1,0 +1,36 @@
+Complete API Documentation 
+
+Method	        Api-Routes	                        Description                 	
+GET	            /api/apps	                        Get all apps	                
+GET	            /api/apps/category/:category	    Get apps by category	        
+GET	            /api/apps/featured	                Get featured apps	            
+GET	            /api/app/:id	                    Get single app	                
+GET	            /api/download/:id	                Download app	                
+GET	            /api/apps/search	                Search apps	                    
+GET	            /api/apps/stats	                    Public stats	                
+POST	        /api/developer/register	            Developer register	            
+POST	        /api/developer/login	            Developer login	                
+GET	            /api/developer/is-auth	            Check auth	                    
+POST        	/api/developer/logout	            Logout	                        
+POST        	/api/developer/app	                Upload app	                    
+PUT	            /api/developer/app/:id	            Update app	                    
+DELETE	        /api/developer/app/:id	            Delete app	                    
+GET         	/api/developer/my-apps	            Get my apps	                    
+GET	            /api/developer/app/:id	            Get single app	                
+POST	        /api/admin/login	                Admin login	                    
+GET	            /api/admin/is-auth	                Check auth	                    
+GET	            /api/admin/logout	                Logout	                        
+GET	            /api/admin/pending-developers	    Pending devs	                
+PATCH	        /api/admin/approve-developer/:id	Approve dev	                    
+DELETE	        /api/admin/reject-developer/:id	    Reject dev	                    
+GET	            /api/admin/apps	                    All apps	                    
+GET	            /api/admin/app/:id	                App details	                    
+PATCH	        /api/admin/block-app/:id	        Block app	                    
+PATCH	        /api/admin/unblock-app/:id	        Unblock app	                    
+DELETE	        /api/admin/delete-app/:id	        Delete app	                    
+GET	            /api/admin/apps/stats	            Admin stats	                    
+GET         	/api/admin/apps/search	            Search apps	                    
+POST	        /api/user/register	                User register	                
+POST	        /api/user/login	User                login	                        
+GET	            /api/user/is-auth	                Check auth	                    
+GET	            /api/user/logout	                Logout	                        
