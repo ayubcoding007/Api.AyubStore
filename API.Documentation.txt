@@ -33,4 +33,4 @@ GET         	/api/admin/apps/search	            Search apps
 POST	        /api/user/register	                User register	                
 POST	        /api/user/login	User                login	                        
 GET	            /api/user/is-auth	                Check auth	                    
-GET	            /api/user/logout	                Logout	                        
+GET	            /api/user/logout	                Logout

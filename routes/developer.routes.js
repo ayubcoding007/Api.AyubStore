@@ -10,7 +10,7 @@ import {
 
 import authDeveloper from "../middlewares/authDeveloper.js";
 
-// Public Routes
+// Public Routes 
 router.post("/register", registerDeveloper);
 router.post("/login", loginDeveloper);
 

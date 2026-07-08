@@ -7,6 +7,7 @@ import {
   deleteApp,
   getAppStats,
   searchApps,
+   moveToPending,
 } from "../controller/adminApp.controller.js";
 import {authAdmin} from '../middlewares/authAdmin.js';
 
@@ -25,7 +26,11 @@ router.get("/app/:id", getAppDetails);
 router.patch("/block-app/:id", blockApp);
 router.patch("/unblock-app/:id", unblockApp);
 
-// Delete app (with cloudinary cleanup)
+// Move to Pending
+router.patch("/move-to-pending/:id", authAdmin, moveToPending);
+
+
+// Delete app with cloudinary cleanup
 router.delete("/delete-app/:id", deleteApp);
 
 // Get statistics

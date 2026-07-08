@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 // Helper check if request is from mobile app
 const isMobileRequest = (req) => req.headers["x-mobile-app"] === "true";
 
+
 // Register Developer
 export const registerDeveloper = async (req, res) => {
   try {
@@ -24,7 +25,7 @@ export const registerDeveloper = async (req, res) => {
     if (existingDeveloper) {
       return res.status(400).json({
         success: false,
-        message: "Developer already exists",
+        message: "Developer already exists with this email",
       });
     }
 
@@ -35,6 +36,7 @@ export const registerDeveloper = async (req, res) => {
       password: hashedPassword,
       company: company || "",
       isApproved: false,
+      status: "pending",
     });
 
     console.log("Developer Registered:", developer.email);
@@ -48,6 +50,7 @@ export const registerDeveloper = async (req, res) => {
         email: developer.email,
         company: developer.company,
         isApproved: developer.isApproved,
+        status: developer.status,
       },
     });
   } catch (error) {
@@ -59,7 +62,8 @@ export const registerDeveloper = async (req, res) => {
   }
 };
 
-// Login Developer 
+
+// Login Developer
 export const loginDeveloper = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -89,10 +93,19 @@ export const loginDeveloper = async (req, res) => {
       });
     }
 
+    // Check if developer is approved
     if (!developer.isApproved) {
       return res.status(403).json({
         success: false,
         message: "Your account is waiting for Admin approval. Please try again later.",
+      });
+    }
+
+    // Check if developer is blocked
+    if (developer.status === "blocked") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked. Please contact admin.",
       });
     }
 
@@ -114,6 +127,7 @@ export const loginDeveloper = async (req, res) => {
       email: developer.email,
       company: developer.company,
       isApproved: developer.isApproved,
+      status: developer.status,
     };
 
     if (isMobileRequest(req)) {
@@ -133,12 +147,11 @@ export const loginDeveloper = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    
     return res.status(200).json({
       success: true,
       message: "Login successful",
       developer: developerData,
-      token, 
+      token,
     });
   } catch (error) {
     console.error("Error in loginDeveloper:", error);
@@ -149,6 +162,7 @@ export const loginDeveloper = async (req, res) => {
   }
 };
 
+
 // Check Auth
 export const checkDeveloperAuth = async (req, res) => {
   try {
@@ -157,7 +171,7 @@ export const checkDeveloperAuth = async (req, res) => {
     if (isMobileRequest(req)) {
       const authHeader = req.headers.authorization;
 
-      if (!authHeader) {
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({
           success: false,
           message: "Unauthorized",
@@ -188,10 +202,18 @@ export const checkDeveloperAuth = async (req, res) => {
       });
     }
 
+    // Check if developer is approved and not blocked
     if (!developer.isApproved) {
       return res.status(403).json({
         success: false,
-        message: "Your account has been blocked. Contact admin.",
+        message: "Your account is not approved. Please contact admin.",
+      });
+    }
+
+    if (developer.status === "blocked") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked. Please contact admin.",
       });
     }
 
@@ -203,6 +225,7 @@ export const checkDeveloperAuth = async (req, res) => {
         email: developer.email,
         company: developer.company,
         isApproved: developer.isApproved,
+        status: developer.status,
       },
     });
   } catch (error) {
@@ -214,9 +237,12 @@ export const checkDeveloperAuth = async (req, res) => {
   }
 };
 
-// Logout Developer
+
+// Logout Developer 
 export const logoutDeveloper = async (req, res) => {
   try {
+    console.log("Developer logging out...");
+
     if (isMobileRequest(req)) {
       return res.status(200).json({
         success: true,
@@ -224,12 +250,22 @@ export const logoutDeveloper = async (req, res) => {
       });
     }
 
+    // Clear both possible cookie names
     res.clearCookie("developerToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       path: "/",
     });
+
+    res.clearCookie("DeveloperToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      path: "/",
+    });
+
+    console.log("Developer logged out successfully");
 
     return res.status(200).json({
       success: true,

@@ -66,8 +66,8 @@ const appSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["approved", "blocked"],
-      default: "approved",
+      enum: ["pending", "approved", "blocked"],
+      default: "pending",
     },
 
     downloads: {

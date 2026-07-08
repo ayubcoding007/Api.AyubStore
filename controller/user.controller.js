@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// Helper: check if request is from mobile app
+// Helper check if request is from mobile app
 const isMobileRequest = (req) => req.headers["x-mobile-app"] === "true";
 
 // register user
@@ -34,8 +34,8 @@ export const registerUser = async (req, res) => {
       expiresIn: "7d",
     });
 
+    // Always return token for both mobile and web
     if (isMobileRequest(req)) {
-      // Mobile app -> send token in JSON (no cookie)
       res.status(201).json({
         message: "User registered successfully (mobile)",
         success: true,
@@ -43,11 +43,10 @@ export const registerUser = async (req, res) => {
         token,
       });
     } else {
-      // Web -> set cookie
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
@@ -55,7 +54,7 @@ export const registerUser = async (req, res) => {
         message: "User registered successfully",
         success: true,
         user: { name: user.name, email: user.email },
-        token,
+        token, 
       });
     }
   } catch (error) {
@@ -64,7 +63,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// login user
+// login user 
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -92,27 +91,36 @@ export const loginUser = async (req, res) => {
       expiresIn: "7d",
     });
 
+    const userData = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    };
+
+    // Always return token for both mobile and web
     if (isMobileRequest(req)) {
-      // Mobile app -> send token in JSON (no cookie)
-      res.status(200).json({
-        message: "Logged in successfully (mobile)",
+      return res.status(200).json({
+        message: "Logged in successfully",
         success: true,
-        user: { name: user.name, email: user.email },
-        token,
+        user: userData,
+        token, 
       });
     } else {
-      // Web -> set cookie 
+      // Web set cookie
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      res.status(200).json({
+      
+      // Token return 
+      return res.status(200).json({
         message: "Logged in successfully",
         success: true,
-        user: { name: user.name, email: user.email },
+        user: userData,
+        token, 
       });
     }
   } catch (error) {
@@ -127,18 +135,24 @@ export const checkAuth = async (req, res) => {
     let userId;
 
     if (isMobileRequest(req)) {
-      // Mobile app -> token from header
       const authHeader = req.headers.authorization;
-      if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
+      if (!authHeader) {
+        return res.status(401).json({ 
+          message: "Unauthorized", 
+          success: false 
+        });
+      }
       const token = authHeader.split(" ")[1];
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         userId = decoded.id;
       } catch {
-        return res.status(401).json({ message: "Invalid token" });
+        return res.status(401).json({ 
+          message: "Invalid token", 
+          success: false 
+        });
       }
     } else {
-      // Web -> cookie
       userId = req.user;
     }
 
@@ -148,7 +162,14 @@ export const checkAuth = async (req, res) => {
         .status(404)
         .json({ message: "User not found", success: false });
     }
-    res.status(200).json({ success: true, user });
+    res.status(200).json({ 
+      success: true, 
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      }
+    });
   } catch (error) {
     console.error("Error in checkAuth:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -159,17 +180,15 @@ export const checkAuth = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     if (isMobileRequest(req)) {
-      // Mobile -> no cookie, just return success
       return res.status(200).json({
-        message: "Logged out successfully (mobile)",
+        message: "Logged out successfully",
         success: true,
       });
     } else {
-      // Web -> clear cookie 
       res.clearCookie("token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         path: "/",
       });
       return res.status(200).json({

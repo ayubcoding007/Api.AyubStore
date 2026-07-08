@@ -50,7 +50,7 @@ export const getAppDetails = async (req, res) => {
   }
 };
 
-// Block App
+// Block App Can block pending or approved apps
 export const blockApp = async (req, res) => {
   try {
     const app = await App.findById(req.params.id);
@@ -86,7 +86,7 @@ export const blockApp = async (req, res) => {
   }
 };
 
-// Unblock App
+// Unblock/Approve App Can approve pending or blocked apps
 export const unblockApp = async (req, res) => {
   try {
     const app = await App.findById(req.params.id);
@@ -110,7 +110,7 @@ export const unblockApp = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "App unblocked successfully",
+      message: "App approved successfully",
       app,
     });
   } catch (error) {
@@ -123,7 +123,7 @@ export const unblockApp = async (req, res) => {
 };
 
 
-// Delete App (Admin) - Updated for Supabase
+// Delete App (Admin) Updated for Supabase
 export const deleteApp = async (req, res) => {
   try {
     const app = await App.findById(req.params.id);
@@ -176,11 +176,12 @@ export const deleteApp = async (req, res) => {
   }
 };
 
-// Get Apps Statistics
+// Get Apps Statistics Updated with pending status
 export const getAppStats = async (req, res) => {
   try {
     const totalApps = await App.countDocuments();
     const approvedApps = await App.countDocuments({ status: "approved" });
+    const pendingApps = await App.countDocuments({ status: "pending" });
     const blockedApps = await App.countDocuments({ status: "blocked" });
     
     const categoryStats = await App.aggregate([
@@ -202,6 +203,7 @@ export const getAppStats = async (req, res) => {
       stats: {
         totalApps,
         approvedApps,
+        pendingApps,
         blockedApps,
         categoryStats,
         topApps,
@@ -246,6 +248,44 @@ export const searchApps = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in searchApps:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
+
+// Move App to Pending
+export const moveToPending = async (req, res) => {
+  try {
+    const app = await App.findById(req.params.id);
+
+    if (!app) {
+      return res.status(404).json({
+        success: false,
+        message: "App not found",
+      });
+    }
+
+    if (app.status === "pending") {
+      return res.status(400).json({
+        success: false,
+        message: "App is already pending",
+      });
+    }
+
+    app.status = "pending";
+    await app.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "App moved to pending successfully",
+      app,
+    });
+  } catch (error) {
+    console.error("Error in moveToPending:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
