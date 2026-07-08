@@ -1,4 +1,4 @@
-import Developer from "../models/Developer.model.js";
+import Developer from "../models/developer.model.js";
 import App from "../models/app.model.js"; 
 
 

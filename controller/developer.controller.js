@@ -1,4 +1,4 @@
-import Developer from "../models/Developer.model.js";
+import Developer from "../models/developer.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
